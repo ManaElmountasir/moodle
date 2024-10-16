@@ -522,7 +522,6 @@ class user extends grade_report {
             }
 
             $gradegrade->load_grade_item();
-
             // Hidden Items.
             if ($gradegrade->grade_item->is_hidden()) {
                 $hidden = ' dimmed_text';
@@ -619,6 +618,20 @@ class user extends grade_report {
                 $gradeitemdata['outcomeid'] = $gradeobject->outcomeid;
                 $gradeitemdata['scaleid'] = $gradeobject->outcomeid;
                 $gradeitemdata['locked'] = $canviewall ? $gradegrade->grade_item->is_locked() : null;
+
+                // Grade items of type "category" haven neither an itemname nor a categoryid yet.
+                if ($gradegrade->grade_item->itemtype == 'category') {
+                    // Load the parent category for category items.
+                    if ($category = $gradegrade->grade_item->load_parent_category()) {
+                        // Set the fullname and parentcategory properties for category items.
+                        $gradeitemdata['itemname'] = $category->get_name();
+                        $gradeitemdata['parentcategoryid'] = $category->parent;
+                    } else {
+                        // Handle the case where the parent category is not found.
+                        $gradeitemdata['itemname'] = 'Unnamed category';
+                        $gradeitemdata['parentcategoryid'] = null;
+                    }
+                }
 
                 if ($this->showfeedback) {
                     // Copy $class before appending itemcenter as feedback should not be centered.
